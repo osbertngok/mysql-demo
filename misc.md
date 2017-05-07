@@ -51,28 +51,62 @@ CHARACTER SET 'utf8'
        `Industry`=@col12;
    ```
  
- Example Queries:
+# Example Queries:
+
+### Find the average min pay for all positions, where Position is either 工程师 or 研发, and the minPay makes sense (e.g. > 10)
 
 ``` 
 SELECT AVG(`MinPay`) 
 FROM `testdb`.`tb_recruitment` 
-WHERE `Valid` = 'Y' 
-AND `Position` in ('工程师','研发')
+WHERE `Position` in ('工程师','研发')
 AND `MinPay` > 10;
 ```
+
+### For the records where Position is either 工程师 or 研发, and the minPay makes sense (e.g. > 10), Find the average min pay and number of records per Employer.
 
 ```
 SELECT `Employer`, AVG(`MinPay`), COUNT(1)
 FROM `testdb`.`tb_recruitment` 
-WHERE `Valid` = 'Y' 
-AND `Position` in ('工程师','研发')
+WHERE `Position` in ('工程师','研发')
 AND `MinPay` > 10
 GROUP BY `Employer`
-ORDER B
-Y AVG(`MinPay`) ASC;
+ORDER BY AVG(`MinPay`) ASC;
 ```
+
+### Select all positions where Position contains keyword 工程师
 
 ```
 SElECT * FROM `testdb`.`tb_recruitment` 
 WHERE `Position` LIKE '%工程师%'
+```
+
+### Append business registration record to all Positions
+
+```
+SELECT *
+FROM tb_recruitment, tb_business_registration
+WHERE tb_recruitment.enterprise = tb_business_registration.enterprise
+```
+
+### Count number of Positions that provides OT meal, high tea, and dinner per enterpise
+
+```
+SELECT enterprise,
+COUNT(NULLIF(ot, '')),
+COUNT(NULLIF(ht, '')),
+COUNT(NULLIF(dinner, '')),
+FROM tb_recruitment
+GROUP BY enterprise
+```
+
+### Return all positions whose salary is more than the average of the enterprise it belongs to
+
+```
+SELECT tb1.*
+FROM tb_recruitment AS tb1,
+(SELECT enterprise, AVG(salary) AS avg_salary
+FROM tb_recruitment
+GROUP BY enterprise) AS tb2
+WHERE tb1.enterprise = tb.enterprise
+AND tb1.salary > tb2.avg_salary
 ```
